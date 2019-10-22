@@ -34,29 +34,37 @@ function func_kargo_teslim_html(){
 	if(isset($_POST["txtBarkod"])){
 		$barkod=explode("\n",$_POST['txtBarkod']);
 		
+		if($_POST['tip']=='iade'){
+			$update_status='iade-kontrol';
+			$query="";
+		}elseif($_POST['tip']=='teslim'){
+			$query=" AND post_status='wc-awaiting-shipment'";
+			$update_status='shipped';
+		}
+		
 			if(count($barkod)>1){
 				foreach($barkod as $v){
-					$wpCode=$wpdb->get_results("SELECT * FROM wpun_posts WHERE post_status='wc-awaiting-shipment' AND ID=".esc_attr($v));
+					$wpCode=$wpdb->get_results("SELECT * FROM ".$wpdb->prefix."posts WHERE ID=".esc_attr($v).$query);
 					if(is_object($wpCode[0])){
 						$order = new WC_Order($wpCode[0]->ID);
-						$order->update_status('shipped');
+						$order->update_status($update_status);
 					}
 				}
 				echo '<div class="updated settings-error notice is-dismissible"> 
 	<p><strong><span style="display: block; margin: 0.5em 0.5em 0 0; clear: both;">İşlem başarıyla gerçekleşmiştir.</em> .</span>
 	</strong></p><button type="button" class="notice-dismiss"></button></div>';
 			}else{
-				$wpCode=$wpdb->get_results("SELECT * FROM wpun_posts WHERE ID=".$_POST['txtBarkod']);
+				$wpCode=$wpdb->get_results("SELECT * FROM ".$wpdb->prefix."posts WHERE ID=".$_POST['txtBarkod']);
 				if(is_object($wpCode[0])){
 					$order = new WC_Order($wpCode[0]->ID);
-					$order->update_status('shipped');
+					$order->update_status($update_status);
 					echo '<div class="updated settings-error notice is-dismissible"> 
 	<p><strong><span style="display: block; margin: 0.5em 0.5em 0 0; clear: both;">İşlem başarıyla gerçekleşmiştir.</em> .</span>
 	</strong></p><button type="button" class="notice-dismiss"></button></div>';
 				}
 			}
 		}
-	}
+	
 	
 	echo '
 	<!-- tab menu baslangic -->
